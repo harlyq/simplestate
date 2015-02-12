@@ -1,1 +1,4 @@
+node_modules
+gl-matrix
 *.js
+!gulpfile.js

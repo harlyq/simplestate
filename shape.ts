@@ -14,7 +14,7 @@ module FreeHand {
                 pos.y >= 0 && pos.y < this.height;
         }
 
-        isInRegion(x1: number, y1: number, x2: number, y2: number): boolean {
+        isOverlapRegion(x1: number, y1: number, x2: number, y2: number): boolean {
             var pos1 = this.transform.getLocal(x1, y1);
             var pos2 = this.transform.getLocal(x2, y2);
 

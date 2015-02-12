@@ -1,4 +1,5 @@
 module FreeHand {
+    "use strict";
 
     export interface Command {
         redo();

@@ -34,11 +34,11 @@ module FreeHand {
         y: number;
         dx: number;
         dy: number;
-        isDown: boolean;
+        state: string;
     }
 
-    function updateTouch(touchInfos: TouchInfo[], touch: Touch, elem: HTMLElement) {
-        var thisTouch: any = null;
+    function updateTouch(state: string, touchInfos: TouchInfo[], touch: Touch, elem: HTMLElement) {
+        var thisTouch: TouchInfo = null;
         for (var i = 0; i < touchInfos.length; ++i) {
             if (touch.identifier == touchInfos[i].id) {
                 thisTouch = touchInfos[i];
@@ -51,11 +51,12 @@ module FreeHand {
 
         if (!thisTouch) {
             thisTouch = {
+                id: touch.identifier,
                 x: x,
                 y: y,
                 dx: 0,
                 dy: 0,
-                isDown: touch.force > 0
+                state: state
             };
             touchInfos.push(thisTouch);
         } else {
@@ -63,7 +64,7 @@ module FreeHand {
             thisTouch.dy = y - thisTouch.y;
             thisTouch.x = x;
             thisTouch.y = y;
-            thisTouch.isDown = touch.force > 0;
+            thisTouch.state = state;
         }
     }
 
@@ -83,18 +84,18 @@ module FreeHand {
             e.preventDefault();
 
             document.addEventListener("touchmove", this.touchMoveHandler);
-            document.addEventListener("touchup", this.touchEndHandler);
+            document.addEventListener("touchend", this.touchEndHandler);
 
-            // touches are accumulated until all touches have been released
-            var allOff = true;
-            for (var i = 0; allOff && i < this.touchInfos.length; ++i)
-                allOff = !this.touchInfos[i].isDown;
+            // // touches are accumulated until all touches have been released
+            // var allOff = true;
+            // for (var i = 0; allOff && i < this.touchInfos.length; ++i)
+            //     allOff = this.touchInfos[i].state === 'up';
 
-            if (allOff)
-                this.touchInfos = [];
+            // if (allOff)
+            //     this.touchInfos = [];
 
             for (var i = 0; i < e.changedTouches.length; ++i)
-                updateTouch(this.touchInfos, e.changedTouches[i], this.elem);
+                updateTouch('down', this.touchInfos, e.changedTouches[i], this.elem);
 
             this.onTouchFunc.call(this, this.touchInfos);
         }
@@ -103,7 +104,7 @@ module FreeHand {
             e.preventDefault();
 
             for (var i = 0; i < e.changedTouches.length; ++i)
-                updateTouch(this.touchInfos, e.changedTouches[i], this.elem);
+                updateTouch('move', this.touchInfos, e.changedTouches[i], this.elem);
 
             this.onTouchFunc.call(this, this.touchInfos);
         }
@@ -114,9 +115,13 @@ module FreeHand {
             document.removeEventListener("touchmove", this.touchMoveHandler);
 
             for (var i = 0; i < e.changedTouches.length; ++i)
-                updateTouch(this.touchInfos, e.changedTouches[i], this.elem);
+                updateTouch('up', this.touchInfos, e.changedTouches[i], this.elem);
 
             this.onTouchFunc.call(this, this.touchInfos);
+
+            // touches are accumulated until all touches have been released
+            if (e.touches.length === 0)
+                this.touchInfos = [];
         }
     }
 }

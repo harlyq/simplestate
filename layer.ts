@@ -1,5 +1,6 @@
 /// <reference path="_dependencies.ts" />
 module FreeHand {
+    "use strict";
 
     // an infinite expanse of subshapes
     class Layer {

@@ -1,5 +1,6 @@
 /// <reference path="_dependencies.ts" />
 module FreeHand {
+    "use strict";
 
     export class Shape {
         width: number = 0;

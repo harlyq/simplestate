@@ -7,7 +7,7 @@ module FreeHand {
         y: number;
         dx: number;
         dy: number;
-        isDown: boolean;
+        state: string;
     }
 
     export class MouseInput {
@@ -35,7 +35,7 @@ module FreeHand {
                 y: y,
                 dx: 0,
                 dy: 0,
-                isDown: true
+                state: 'down'
             };
             this.onMouseFunc.call(this, info);
 
@@ -54,7 +54,7 @@ module FreeHand {
                 y: y,
                 dx: x - this.lastX,
                 dy: y - this.lastY,
-                isDown: this.isButtonDown
+                state: 'move'
             };
             this.onMouseFunc.call(this, info);
 
@@ -74,7 +74,7 @@ module FreeHand {
                 y: y,
                 dx: x - this.lastX,
                 dy: y - this.lastY,
-                isDown: false
+                state: 'up'
             };
             this.onMouseFunc.call(this, info);
 

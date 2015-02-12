@@ -1,4 +1,5 @@
 node_modules
 gl-matrix
 *.js
+*.log
 !gulpfile.js

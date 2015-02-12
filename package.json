@@ -1,0 +1,14 @@
+{
+    "name": "simplestate",
+    "description": "A package for simple state",
+    "author": "TBD",
+    "README": "README.md"
+    "dependencies": {
+        "gulp": "^3.8.11",
+        "gulp-run": "^1.6.6",
+        "gulp-typescript-compiler": "^1.0.1",
+        "gulp-util": "^3.0.3",
+        "typescript": "^1.4.1"
+    },
+    "engine": "node 0.11.x"
+}

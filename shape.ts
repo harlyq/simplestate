@@ -3,28 +3,38 @@ module FreeHand {
     "use strict";
 
     export class Shape {
-        width: number = 0;
-        height: number = 0;
-        private transform: Transform = new Transform();
+        minX: number = 10e10;
+        minY: number = 10e10;
+        maxX: number = -10e10;
+        maxY: number = -10e10;
+        protected transform: Transform = new Transform();
 
-        draw(ctx: CanvasRenderingContext2D, transform: Transform) {}
+        draw(ctx: CanvasRenderingContext2D) {}
 
         isInside(x: number, y: number): boolean {
             var pos = this.transform.getLocal(x, y);
-            return pos.x >= 0 && pos.x < this.width &&
-                pos.y >= 0 && pos.y < this.height;
+            return pos.x >= this.minX && pos.x < this.maxX &&
+                pos.y >= this.minY && pos.y < this.maxY;
         }
 
         isOverlapRegion(x1: number, y1: number, x2: number, y2: number): boolean {
             var pos1 = this.transform.getLocal(x1, y1);
             var pos2 = this.transform.getLocal(x2, y2);
 
-            return pos1.x < this.width && x2 >= 0 &&
-                pos1.y < this.height && y2 >= 0;
+            return pos1.x < this.maxX && x2 >= this.minX &&
+                pos1.y < this.maxY && y2 >= this.minY;
         }
 
         getTransform(): Transform {
             return this.transform;
+        }
+
+
+        updateBounds(x: number, y: number) {
+            this.minX = Math.min(this.minX, x);
+            this.minY = Math.min(this.minY, y);
+            this.maxX = Math.max(this.maxX, x);
+            this.maxY = Math.max(this.maxY, y);
         }
     }
 }

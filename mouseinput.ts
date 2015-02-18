@@ -7,7 +7,7 @@ module FreeHand {
         y: number;
         dx: number;
         dy: number;
-        state: string;
+        state: string; // up, down, move
     }
 
     export class MouseInput {

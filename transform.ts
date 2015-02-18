@@ -91,7 +91,7 @@ module FreeHand {
             return this;
         }
 
-        draw(ctx: CanvasRenderingContext2D) {
+        transformContext(ctx: CanvasRenderingContext2D) {
             var cos = Math.cos(this.r);
             var sin = Math.sin(this.r);
             ctx.transform(cos * this.sx, sin * this.sy, -sin * this.sx, cos * this.sy, this.tx, this.ty);

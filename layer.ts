@@ -3,8 +3,9 @@ module FreeHand {
     "use strict";
 
     // an infinite expanse of subshapes
-    class Layer {
+    export class Layer {
         private children: Shape[] = [];
+        public transform: Transform = new Transform();
 
         addShape(shape: Shape) {
             this.children.push(shape);
@@ -16,9 +17,11 @@ module FreeHand {
                 this.children.splice(i, 1);
         }
 
-        draw(ctx: CanvasRenderingContext2D, transform: Transform) {
+        draw(ctx: CanvasRenderingContext2D) {
+            this.transform.transformContext(ctx);
+
             for (var i = 0; i < this.children.length; ++i)
-                this.children[i].draw(ctx, transform);
+                this.children[i].draw(ctx);
         }
 
         getShapeFromPoint(x: number, y: number): Shape {

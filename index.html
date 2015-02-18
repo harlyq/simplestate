@@ -7,23 +7,47 @@
     window.addEventListener("load", function(e) {
         var canvas = document.getElementById("canvas");
         var ctx = canvas.getContext("2d");
+        var pinch = new FreeHand.Pinch();
+        var layer = new FreeHand.Layer();
+        var shape = null;
+        var lastScale = 1;
+        var newTrail = true;
 
         var drawLines = function(e) {
-            if (e.state === 'down') {
-                ctx.strokeStyle = 'black';
-                ctx.moveTo(e.x, e.y);
-            } else if (e.state === 'move') {
-                ctx.lineTo(e.x, e.y);
-                ctx.stroke();
-            } else if (e.start === 'up') {}
+            if (e.state === 'down' || e.state === 'move') {
+                if (e.state === 'down')
+                    newTrail = true;
+
+                if (newTrail) {
+                    shape = new FreeHand.TrailShape();
+                    layer.addShape(shape);
+                    newTrail = false;
+                    console.log('newshape');
+                }
+                shape.addPoint(e.x, e.y);
+                shape.drawDirect(ctx);
+            }
         }
 
         var mouseInput = new FreeHand.MouseInput(canvas, drawLines);
-        var touchInput = new FreeHand.TouchInput(canvas, function(e) {
-            if (e.length === 0)
+        var touchInput = new FreeHand.TouchInput(canvas, function(touches) {
+            if (touches.length === 0)
                 return;
 
-            drawLines(e[0]); // first point
+            var pinchInfo = pinch.updateTouches(touches);
+            if (pinchInfo) {
+                // use an absolute scale to lessen rounding error from cummulative multiplications
+                var scale = pinchInfo.scale * lastScale;
+                layer.transform.setScale(scale, scale);
+                layer.transform.translate(pinchInfo.dx, pinchInfo.dy);
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                layer.draw(ctx);
+                newTrail = true;
+            } else {
+                lastScale = layer.transform.sx;
+                drawLines(touches[0]); // single point - invalid for 1 -> 2 -> 1 finger
+            }
         });
     });
     </script>

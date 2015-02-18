@@ -27,14 +27,13 @@ module FreeHand {
         touches: Touch[];
     }
 
-
     export interface TouchInfo {
         id: number;
         x: number;
         y: number;
         dx: number;
         dy: number;
-        state: string;
+        state: string; // up, down, move
     }
 
     function updateTouch(state: string, touchInfos: TouchInfo[], touch: Touch, elem: HTMLElement) {
@@ -85,14 +84,6 @@ module FreeHand {
 
             document.addEventListener("touchmove", this.touchMoveHandler);
             document.addEventListener("touchend", this.touchEndHandler);
-
-            // // touches are accumulated until all touches have been released
-            // var allOff = true;
-            // for (var i = 0; allOff && i < this.touchInfos.length; ++i)
-            //     allOff = this.touchInfos[i].state === 'up';
-
-            // if (allOff)
-            //     this.touchInfos = [];
 
             for (var i = 0; i < e.changedTouches.length; ++i)
                 updateTouch('down', this.touchInfos, e.changedTouches[i], this.elem);

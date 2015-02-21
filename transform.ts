@@ -32,7 +32,10 @@ module FreeHand {
             return this;
         }
 
-        scale(sx: number, sy: number): Transform {
+        scale(sx: number, sy ? : number): Transform {
+            if (typeof sy === 'undefined')
+                sy = sx;
+
             this.sx *= sx;
             this.sy *= sy;
             return this;
@@ -80,7 +83,10 @@ module FreeHand {
         }
 
 
-        setScale(sx: number, sy: number): Transform {
+        setScale(sx: number, sy ? : number): Transform {
+            if (typeof sy === 'undefined')
+                sy = sx;
+
             this.sx = sx;
             this.sy = sy;
             return this;
@@ -100,8 +106,15 @@ module FreeHand {
         getLocal(x: number, y: number): XY {
             var cos = Math.cos(this.r);
             var sin = Math.sin(this.r);
-            var lx = (x - this.tx + (y - this.ty) * this.sx / this.sy) / (2 * cos * this.sx);
-            var ly = (y - this.ty - lx * cos * this.sy) / (sin * this.sy);
+            var lx = 0;
+            var ly = 0;
+            if (Math.abs(cos) < 0.001) {
+                lx = (y - this.ty) * this.sy / sin;
+                ly = (this.tx - x) * this.sx / sin;
+            } else {
+                lx = (x - this.tx + (y - this.ty) * (sin * this.sx) / (cos * this.sy)) / (this.sx * (1 - sin * sin / cos));
+                ly = (y - this.ty - lx * sin * this.sy) / (cos * this.sy);
+            }
             return {
                 x: lx,
                 y: ly
@@ -113,7 +126,7 @@ module FreeHand {
             var sin = Math.sin(this.r);
             return {
                 x: lx * cos * this.sx - ly * sin * this.sx + this.tx,
-                y: ly * sin * this.sy + lx * cos * this.sy + this.ty
+                y: lx * sin * this.sy + ly * cos * this.sy + this.ty
             };
         }
 

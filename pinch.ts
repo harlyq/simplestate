@@ -13,6 +13,8 @@ module FreeHand {
     export class Pinch {
         lastX: number = 0;
         lastY: number = 0;
+        startX: number = 0;
+        startY: number = 0;
         startDist: number = 0;
         wasValid: boolean = false;
 
@@ -40,26 +42,34 @@ module FreeHand {
             var x = touches[one].x - touches[two].x;
             var y = touches[one].y - touches[two].y;
             var dist = Math.sqrt(x * x + y * y);
-            if (dist < 0.001) {
-                this.wasValid = false;
-                return null;
-            }
 
             var dx = 0;
             var dy = 0;
             var scale = 1;
 
             if (!this.wasValid) {
+                // can't have a zero start distance
+                if (dist < 0.001) {
+                    this.wasValid = false;
+                    return null;
+                }
+
+                this.startX = x;
+                this.startY = y;
                 this.startDist = dist;
                 this.wasValid = true;
             } else {
+                scale = dist / this.startDist;
+                x = x / scale - this.startX;
+                y = y / scale - this.startY;
+
                 dx = this.lastX - x;
                 dy = this.lastY - y;
-                scale = dist / this.startDist;
             }
             this.lastX = x;
             this.lastY = y;
 
+            // x,y,dx,dy are in unscaled pixels (i.e. when the pinch was started)
             return {
                 x: x,
                 y: y,

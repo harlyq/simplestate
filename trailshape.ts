@@ -24,6 +24,7 @@ module FreeHand {
                 return;
 
             ctx.save();
+            this.transform.transformContext(ctx);
             this.drawStart(ctx, points[0], points[1])
             for (var i = 2; i < points.length;)
                 ctx.lineTo(points[i++], points[i++]);
@@ -32,7 +33,11 @@ module FreeHand {
             ctx.restore();
         }
 
-        drawDirect(ctx: CanvasRenderingContext2D) {
+        drawDirect(ctx: CanvasRenderingContext2D, parentTransform: Transform) {
+            ctx.save();
+            parentTransform.transformContext(ctx);
+            this.transform.transformContext(ctx);
+
             var points = this.points;
             var len = points.length;
             if (len === 2) {
@@ -41,6 +46,7 @@ module FreeHand {
                 ctx.lineTo(points[len - 2], points[len - 1]);
                 ctx.stroke();
             }
+            ctx.restore();
         }
 
         drawStart(ctx: CanvasRenderingContext2D, x: number, y: number) {

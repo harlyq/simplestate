@@ -7,47 +7,55 @@
     window.addEventListener("load", function(e) {
         var canvas = document.getElementById("canvas");
         var ctx = canvas.getContext("2d");
+        var pzr = new FreeHand.PanZoomRotate();
         var pinch = new FreeHand.Pinch();
-        var layer = new FreeHand.Layer();
+        var layer = new FreeHand.Layer(canvas);
         var shape = null;
         var lastScale = 1;
-        var newTrail = true;
+        var lastX = 0;
+        var lastY = 0;
 
         var drawLines = function(e) {
             if (e.state === 'down' || e.state === 'move') {
-                if (e.state === 'down')
-                    newTrail = true;
-
-                if (newTrail) {
+                if (e.state === 'down') {
                     shape = new FreeHand.TrailShape();
                     layer.addShape(shape);
-                    newTrail = false;
-                    console.log('newshape');
                 }
-                shape.addPoint(e.x, e.y);
-                shape.drawDirect(ctx);
+                var pos = layer.transform.getLocal(e.x, e.y);
+                shape.addPoint(pos.x, pos.y);
+                shape.drawDirect(ctx, layer.transform);
             }
         }
 
-        var mouseInput = new FreeHand.MouseInput(canvas, drawLines);
+        var mouseInput = new FreeHand.MouseInput(canvas, function(e) {
+            if (e.state === 'wheel') {
+                pzr.updateMouseInput(layer.transform, e, 2);
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                layer.draw(ctx);
+            } else {
+                drawLines(e);
+            }
+        });
+
         var touchInput = new FreeHand.TouchInput(canvas, function(touches) {
             if (touches.length === 0)
                 return;
 
-            var pinchInfo = pinch.updateTouches(touches);
-            if (pinchInfo) {
-                // use an absolute scale to lessen rounding error from cummulative multiplications
-                var scale = pinchInfo.scale * lastScale;
-                layer.transform.setScale(scale, scale);
-                layer.transform.translate(pinchInfo.dx, pinchInfo.dy);
+            // var pinchInfo = pinch.updateTouchInput(touches);
+            // if (pinchInfo) {
+            //     // use an absolute scale to lessen rounding error from cummulative multiplications
+            //     var scale = pinchInfo.scale * lastScale;
+            //     layer.transform.setScale(scale, scale);
+            //     layer.transform.translate(pinchInfo.dx / lastScale + lastX, pinchInfo.dy / lastScale + lastY);
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                layer.draw(ctx);
-                newTrail = true;
-            } else {
-                lastScale = layer.transform.sx;
-                drawLines(touches[0]); // single point - invalid for 1 -> 2 -> 1 finger
-            }
+            //     ctx.clearRect(0, 0, canvas.width, canvas.height);
+            //     layer.draw(ctx);
+            // } else {
+            //     lastScale = layer.transform.sx;
+            //     lastX = layer.transform.tx;
+            //     lastY = layer.transform.ty;
+            //     drawLines(touches[0]); // single point - invalid for 1 -> 2 -> 1 finger
+            // }
         });
     });
     </script>

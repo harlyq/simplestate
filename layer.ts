@@ -7,6 +7,8 @@ module FreeHand {
         private children: Shape[] = [];
         public transform: Transform = new Transform();
 
+        constructor() {}
+
         addShape(shape: Shape) {
             this.children.push(shape);
         }
@@ -18,10 +20,13 @@ module FreeHand {
         }
 
         draw(ctx: CanvasRenderingContext2D) {
+            ctx.save();
             this.transform.transformContext(ctx);
 
             for (var i = 0; i < this.children.length; ++i)
                 this.children[i].draw(ctx);
+
+            ctx.restore();
         }
 
         getShapeFromPoint(x: number, y: number): Shape {

@@ -11,15 +11,14 @@
         var pinch = new FreeHand.Pinch();
         var layer = new FreeHand.Layer(canvas);
         var shape = null;
-        var lastScale = 1;
-        var lastX = 0;
-        var lastY = 0;
+        var startShapeTime = 0;
 
         var drawLines = function(e) {
             if (e.state === 'down' || e.state === 'move') {
-                if (e.state === 'down') {
+                if (e.state === 'down' || !shape) {
                     shape = new FreeHand.TrailShape();
                     layer.addShape(shape);
+                    startShapeTime = Date.now();
                 }
                 var pos = layer.transform.getLocal(e.x, e.y);
                 shape.addPoint(pos.x, pos.y);
@@ -27,11 +26,17 @@
             }
         }
 
+        var deleteLastShape = function() {
+            layer.removeShape(shape);
+            shape = null;
+        }
+
         var mouseInput = new FreeHand.MouseInput(canvas, function(e) {
             if (e.state === 'wheel') {
-                pzr.updateMouseInput(layer.transform, e, 2);
-                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                layer.draw(ctx);
+                if (pzr.updateMouseInput(layer.transform, e, 2)) {
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    layer.draw(ctx);
+                }
             } else {
                 drawLines(e);
             }
@@ -41,21 +46,20 @@
             if (touches.length === 0)
                 return;
 
-            // var pinchInfo = pinch.updateTouchInput(touches);
-            // if (pinchInfo) {
-            //     // use an absolute scale to lessen rounding error from cummulative multiplications
-            //     var scale = pinchInfo.scale * lastScale;
-            //     layer.transform.setScale(scale, scale);
-            //     layer.transform.translate(pinchInfo.dx / lastScale + lastX, pinchInfo.dy / lastScale + lastY);
+            if (pzr.updateTouchInput(layer.transform, touches)) {
+                // when using two fingers, one finger will connect first, drawing
+                // a line, then the second finger will connect a fraction of a
+                // second later.  The user's intention is to use two fingers and 
+                // not draw a line, so we delete the last shape
+                if (Date.now() - startShapeTime < 500)
+                    deleteLastShape();
 
-            //     ctx.clearRect(0, 0, canvas.width, canvas.height);
-            //     layer.draw(ctx);
-            // } else {
-            //     lastScale = layer.transform.sx;
-            //     lastX = layer.transform.tx;
-            //     lastY = layer.transform.ty;
-            //     drawLines(touches[0]); // single point - invalid for 1 -> 2 -> 1 finger
-            // }
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                layer.draw(ctx);
+            } else {
+                // TODO: verify 1 touch -> 2 touches -> 1 touch
+                drawLines(touches[0]); // single touch
+            }
         });
     });
     </script>

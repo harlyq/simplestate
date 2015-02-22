@@ -3,6 +3,10 @@ module FreeHand {
     "use strict";
 
     export class PanZoomRotate {
+        // touch params, all touch changes are relative to the
+        // starting parameters (first touch) to avoid rounding errors
+        startCX: number = 0;
+        startCY: number = 0;
         startDist: number = 0;
         startTransform: Transform = null;
         wasValid: boolean = false;
@@ -29,62 +33,56 @@ module FreeHand {
             return transform;
         }
 
-        // updateTouchInput(transform: Transform, touches: TouchInfo[]): Transform {
-        //     var one = -1;
-        //     var two = -1;
-        //     for (var i = 0; i < touches.length; ++i) {
-        //         if (touches[i].state !== 'up') {
-        //             if (one === -1)
-        //                 one = i;
-        //             else if (two === -1)
-        //                 two = i;
-        //             else
-        //                 break;
-        //         }
-        //     }
+        updateTouchInput(transform: Transform, touches: TouchInfo[]): Transform {
+            var one = -1;
+            var two = -1;
+            for (var i = 0; i < touches.length; ++i) {
+                if (touches[i].state !== 'up') {
+                    if (one === -1)
+                        one = i;
+                    else if (two === -1)
+                        two = i;
+                    else
+                        break;
+                }
+            }
 
-        //     if (one === -1 || two === -1) {
-        //         this.wasValid = false;
-        //         return null;
-        //     }
+            if (one === -1 || two === -1) {
+                this.wasValid = false;
+                return null;
+            }
 
-        //     var x = touches[one].x - touches[two].x;
-        //     var y = touches[one].y - touches[two].y;
-        //     var dist = Math.sqrt(x * x + y * y);
+            var x = touches[one].x - touches[two].x;
+            var y = touches[one].y - touches[two].y;
+            var cx = (touches[one].x + touches[two].x) * 0.5;
+            var cy = (touches[one].y + touches[two].y) * 0.5;
+            var dist = Math.sqrt(x * x + y * y);
 
-        //     var dx = 0;
-        //     var dy = 0;
-        //     var scale = 1;
+            if (!this.wasValid) {
+                // can't have a zero start distance
+                if (dist < 0.001) {
+                    this.wasValid = false;
+                    return null;
+                }
 
-        //     if (!this.wasValid) {
-        //         // can't have a zero start distance
-        //         if (dist < 0.001) {
-        //             this.wasValid = false;
-        //             return null;
-        //         }
+                this.startTransform = transform.clone();
+                this.startDist = dist;
+                this.startCX = cx;
+                this.startCY = cy;
+                this.wasValid = true;
+                return transform;
+            }
 
-        //         this.startTransform.copy(transform);
-        //         this.startDist = dist;
-        //         this.wasValid = true;
-        //     } else {
-        //         scale = dist / this.startDist;
-        //         x = x / scale - this.startX;
-        //         y = y / scale - this.startY;
+            var scale = dist / this.startDist;
 
-        //         dx = this.lastX - x;
-        //         dy = this.lastY - y;
-        //     }
-        //     this.lastX = x;
-        //     this.lastY = y;
+            transform.setTranslate(
+                cx - (this.startCX - this.startTransform.tx) * scale,
+                cy - (this.startCY - this.startTransform.ty) * scale);
+            transform.setScale(
+                scale * this.startTransform.sx,
+                scale * this.startTransform.sy);
 
-        //     // x,y,dx,dy are in unscaled pixels (i.e. when the pinch was started)
-        //     return {
-        //         x: x,
-        //         y: y,
-        //         dx: dx,
-        //         dy: dy,
-        //         scale: scale
-        //     };
-        // }
+            return transform;
+        }
     }
 }

@@ -82,8 +82,10 @@ module FreeHand {
         onTouchStart(e: TouchEvent) {
             e.preventDefault();
 
-            document.addEventListener("touchmove", this.touchMoveHandler);
-            document.addEventListener("touchend", this.touchEndHandler);
+            if (this.touchInfos.length === 0) {
+                document.addEventListener("touchmove", this.touchMoveHandler);
+                document.addEventListener("touchend", this.touchEndHandler);
+            }
 
             for (var i = 0; i < e.changedTouches.length; ++i)
                 updateTouch('down', this.touchInfos, e.changedTouches[i], this.elem);
@@ -102,8 +104,6 @@ module FreeHand {
 
         onTouchEnd(e: TouchEvent) {
             e.preventDefault();
-            document.removeEventListener("touchend", this.touchEndHandler);
-            document.removeEventListener("touchmove", this.touchMoveHandler);
 
             for (var i = 0; i < e.changedTouches.length; ++i)
                 updateTouch('up', this.touchInfos, e.changedTouches[i], this.elem);
@@ -111,8 +111,11 @@ module FreeHand {
             this.onTouchFunc.call(this, this.touchInfos);
 
             // touches are accumulated until all touches have been released
-            if (e.touches.length === 0)
+            if (e.touches.length === 0) {
+                document.removeEventListener("touchend", this.touchEndHandler);
+                document.removeEventListener("touchmove", this.touchMoveHandler);
                 this.touchInfos = [];
+            }
         }
     }
 }
